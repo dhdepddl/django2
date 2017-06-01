@@ -34,7 +34,6 @@ class Post(models.Model):
     item_1 = models.CharField(max_length=20)
     item_2 = models.CharField(max_length=20)
     created = models.DateTimeField()
-    deleted = models.DateTimeField()
     topic = []
     #
     # def __init__(self, postId, user, title, item1, item2):
