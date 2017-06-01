@@ -6,27 +6,36 @@ import json
 class Firebase:
     def __init__(self):
         auth = FirebaseAuthentication('kUFM5wAt2CkXtfKrglMjLPgNsuWsO33j1uKHMRyn', 'dhdepddl@gmail.com', True, True)
-        self.db = firebase.FirebaseApplication('https://pickme-f283e.firebaseio.com/', auth)
+        self.db = firebase.FirebaseApplication('https://pickme-f283e.firebaseio.com', auth)
+        self.posts = {}
         self.votes = {}
         self.hearts = {}
         self.comments = {}
         self.bookmarks = {}
+
+    def get_all_data(self):
+        total_data = self.db.get('/', None)
+        self.posts = total_data['cards']['data']
+        self.votes = total_data['item-selected']
+        self.hearts = total_data['card-hearts']
+        self.comments = total_data['card-comments']
+        self.bookmarks = total_data['card-bookmarks']
 
     def get_all_posts(self):
         posts = self.db.get('/cards/data', None)
         return posts
 
     def get_all_vote(self):
-        self.votes = self.db.get('item-selected', None)
+        self.votes = self.db.get('/item-selected', None)
 
     def get_all_hearts(self):
-        self.hearts = self.db.get('card-hearts', None)
+        self.hearts = self.db.get('/card-hearts', None)
 
     def get_all_comments(self):
-        self.comments = self.db.get('card-comments', None)
+        self.comments = self.db.get('/card-comments', None)
 
     def get_all_bookmarks(self):
-        self.bookmarks = self.db.get('card-bookmarks', None)
+        self.bookmarks = self.db.get('/card-bookmarks', None)
 
     def is_deleted(self, post_info):
         if u'deleted' in post_info[1].keys():
@@ -103,17 +112,13 @@ class Firebase:
     def get_cards(self, user_id):
         result = []
 
-        # Get data
-        posts = self.get_all_posts()
-        self.get_all_vote()
-        self.get_all_hearts()
-        self.get_all_comments()
-        self.get_all_bookmarks()
+        self.get_all_data()
 
         # For each card
-        for post in posts.items():
+        for post in self.posts.items():
             if self.is_deleted(post):
                 continue
             post_info = post[1]
             result.append(self.get_card(user_id, post_info))
+
         return {'cards': result}
