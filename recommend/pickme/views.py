@@ -9,5 +9,5 @@ from classes.db import Firebase
 def space(request):
     fb = Firebase()
     user_id = request.path.replace('/', '').replace('space', '')
-    posts = fb.get_cards(user_id)
+    posts = fb.get_cards(user_id, 5)
     return JsonResponse(posts)

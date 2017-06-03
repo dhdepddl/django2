@@ -1,6 +1,6 @@
 from firebase import FirebaseAuthentication, FirebaseApplication, firebase
 from User import User
-import json
+import operator
 
 
 class Firebase:
@@ -109,7 +109,7 @@ class Firebase:
         result.update(self.bookmark_info(user_id, post_id))
         return result
 
-    def get_cards(self, user_id):
+    def get_cards(self, user_id, num_of_recommend):
         result = []
 
         self.get_all_data()
@@ -120,5 +120,9 @@ class Firebase:
                 continue
             post_info = post[1]
             result.append(self.get_card(user_id, post_info))
+
+        result.sort(key=operator.itemgetter('created'))
+        for i in range(len(result)):
+            print result[i]['created']
 
         return {'cards': result}
