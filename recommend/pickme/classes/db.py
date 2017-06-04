@@ -16,6 +16,7 @@ class Firebase:
         self.user_cards = {}
         self.user_hearts = {}
         self.user_bookmarks = {}
+        self.hot_post = []
 
     def get_all_data(self):
         total_data = self.db.get('/', None)
@@ -38,7 +39,7 @@ class Firebase:
             return True
         return False
 
-    def vote_info(self, user_id, post_id):
+    def vote_info(self, user_id, post_id, writer):
         try:
             votes = self.votes[post_id]
             voted_1 = 0
@@ -56,7 +57,15 @@ class Firebase:
         except KeyError:
             return {"voted_1": 0, "voted_2": 0, "selected": 0}
         else:
-            return {"voted_1": voted_1, "voted_2": voted_2, "selected": selected}
+            if user_id != writer:
+                total = voted_1 + voted_2
+                if len(self.hot_post) < 5:
+                    self.hot_post.append((post_id, total))
+                else:
+                    mn, idx = min((self.hot_post[i][1], i) for i in xrange(len(self.hot_post)))
+                    if mn < total:
+                        self.hot_post[idx] = (post_id, total)
+                return {"voted_1": voted_1, "voted_2": voted_2, "selected": selected}
 
     def heart_info(self, user_id, post_id):
         try:
@@ -118,7 +127,8 @@ class Firebase:
             print 'no post id'
             return {}
         else:
-            result.update(self.vote_info(user_id, post_id))
+            writer = result['user']
+            result.update(self.vote_info(user_id, post_id, writer))
             result.update(self.heart_info(user_id, post_id))
             result.update(self.comment_info(user_id, post_id))
             result.update(self.bookmark_info(user_id, post_id))
