@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.db import models
 
 
-class Topic(models.Model):
-    topic_id = models.SmallIntegerField(primary_key=True)
-    words = models.CharField(max_length=200)
+class Topic():
+    def __init__(self, topic_id, words):
+        self.topic_id = topic_id
+        self.words = words
 
 
 class TopicManager:

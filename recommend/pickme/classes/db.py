@@ -35,6 +35,7 @@ class Firebase:
             self.user_bookmarks = {}
 
     def get_topic(self):
+        import io
         self.get_all_data()
         posts = self.posts.items() + self.db.get('/dummy-cards/data', None).items()
         from Topic import TopicManager
@@ -44,11 +45,14 @@ class Firebase:
             post = post[1]
             tm.add_post(Post(post['id'], post['user'], post['title'], post['item_1'], post['item_2'], post['created']))
         tm.get_topic_from_posts(20, 20)
+        f = io.open('topic_words', 'w', encoding='utf8')
         for topic in tm.topic_set:
-            print topic.topic_id
-            print str(topic.words)
-            topic.save()
-
+            f.write(u', '.join(topic.words))
+            f.write(u'\n')
+        tm.get_topic_from_posts(20, 20)
+        for post in tm.post_set:
+            post.get_topic(tm.topic_set, 2)
+            post.save_db()
 
     def is_deleted(self, post_info):
         if u'deleted' in post_info[1].keys():
@@ -164,14 +168,11 @@ class Firebase:
             result.append(self.get_card(user_id, post_info))
 
         result.sort(key=operator.itemgetter('created'))
-        result += self.recommend(user_id, num_of_recommend)
-
-        print self.hot_post
-
+        result = self.recommend(user_id, num_of_recommend) + result
         return {'cards': result}
 
     def recommend_post_id(self, user_id, num_of_cards):
-        result = []
+        result = [x[1] for x in self.hot_post][:2]
         return result
 
     def recommend(self, user_id, num_of_cards):

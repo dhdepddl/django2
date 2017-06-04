@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .classes.Topic import Topic
 from .classes.Post import PostDB
 from .classes.User import UserDB
 
@@ -11,4 +10,3 @@ from .classes.User import UserDB
 
 admin.site.register(PostDB)
 admin.site.register(UserDB)
-admin.site.register(Topic)

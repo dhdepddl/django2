@@ -25,12 +25,14 @@ def rating_doc(doc, topic_set):
 
     return rst_topics
 
+
 class PostDB(models.Model):
-    user_id = models.ForeignKey('auth.User')
+    user_id = models.CharField(max_length=30)
     post_id = models.CharField(primary_key=True, max_length=30)
     topic = models.SmallIntegerField(null=True)
     topic_2 = models.SmallIntegerField(null=True)
     created = models.BigIntegerField(db_index=True)
+
 
 class Post():
     def __init__(self, postId, user, title, item1, item2, created):
@@ -50,12 +52,14 @@ class Post():
 
     def save_db(self):
         try:
+            print self.topic[0]['topic']
             post = PostDB.objects.get(post_id=self.post_id)
         except:
-            PostDB(user_id=self.user_id, post_id=self.post_id, topic=self.topic[0], topic2=self.topic[1], created=self.created).save()
+            post = PostDB(user_id=self.user_id, post_id=self.post_id, topic=self.topic[0]['topic'], topic_2=self.topic[1]['topic'], created=self.created)
+            post.save()
         else:
-            post.topic = self.topic[0]
-            post.topic2 = self.topic[1]
+            post.topic = self.topic[0]['topic']
+            post.topic2 = self.topic[1]['topic']
             post.save()
 
     def get_topic(self, topic_set, numOftopic):
