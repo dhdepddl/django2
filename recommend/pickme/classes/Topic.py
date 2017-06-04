@@ -1,7 +1,11 @@
-class Topic:
-    def __init__(self, topic_id, words):
-        self.topic_id = topic_id
-        self.words = words
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+from django.db import models
+
+
+class Topic(models.Model):
+    topic_id = models.SmallIntegerField(primary_key=True)
+    words = models.CharField(max_length=200)
 
 
 class TopicManager:
@@ -21,10 +25,19 @@ class TopicManager:
         else:
             raise TypeError('input parameter is not Post class')
 
-    def get_topic_from_posts(self, X, vocabs, num_of_words, num_of_topics, alpha=0.02, eta=0.005):
+    def get_topic_from_posts(self, num_of_words, num_of_topics, alpha=0.02, eta=0.005):
         import lda_module as lda
         import numpy
-        model = lda.LDA(n_topics=num_of_topics, n_iter=1000, random_state=1, alpha=alpha, eta=eta)
+        vocabs = []
+        nouns = []
+        for post in self.post_set:
+            noun_set = post.noun_set
+            vocabs += noun_set
+            nouns.append(noun_set)
+        vocabs = list(set(vocabs))
+        X = lda.matrix_lda(nouns, vocabs)
+
+        model = lda.LDA(n_topics=num_of_topics, n_iter=2000, random_state=1, alpha=alpha, eta=eta)
         model.fit(X)
         topic_word = model.topic_word_
         for i, topic_dist in enumerate(topic_word):

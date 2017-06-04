@@ -27,29 +27,39 @@ def rating_doc(doc, topic_set):
     return rst_topics
 
 
+class PostDB(models.Model):
+    user_id = models.ForeignKey('auth.User')
+    post_id = models.CharField(primary_key=True, max_length=30)
+    topic = models.SmallIntegerField(null=True)
+    topic_2 = models.SmallIntegerField(null=True)
+    created = models.BigIntegerField(db_index=True)
+
+
 class Post(models.Model):
-    user = models.ForeignKey('auth.User')
-    post_id = models.CharField(db_index=True, max_length=30)
-    title = models.CharField(max_length=100)
-    item_1 = models.CharField(max_length=20)
-    item_2 = models.CharField(max_length=20)
-    created = models.DateTimeField()
-    topic = []
-    #
-    # def __init__(self, postId, user, title, item1, item2):
-    #     import os
-    #     self.user = user
-    #     self.post_id = postId
-    #     self.title = title
-    #     self.item_1 = item1
-    #     self.item_2 = item2
-    #     self.topic = []
-    #     if os.name == 'posix' or 'mac':
-    #         from konlpy.tag import Mecab
-    #         self.noun_set = Mecab().nouns(title)
-    #     else:
-    #         from konlpy.tag import Twitter
-    #         self.noun_set = Twitter().nouns(title)
+    def __init__(self, postId, user, title, item1, item2, created):
+        from konlpy.tag import Twitter
+        twitter = Twitter()
+        self.user_id = user
+        self.post_id = postId
+        title = [x[0] for x in twitter.pos(title, norm=True, stem=True) if x[1] == 'Noun' or x[1] == 'Verb']
+        item_1 = [x[0] for x in twitter.pos(item1, norm=True, stem=True) if x[1] == 'Noun' or x[1] == 'Verb']
+        item_2 = [x[0] for x in twitter.pos(item2, norm=True, stem=True) if x[1] == 'Noun' or x[1] == 'Verb']
+        self.topic = []
+        self.noun_set = title + item_1 + item_2
+        self.created = created
+
+    def __str__(self):
+        return self.post_id
+
+    def save_db(self):
+        try:
+            post = PostDB.objects.get(post_id=self.post_id)
+        except:
+            PostDB(user_id=self.user_id, post_id=self.post_id, topic=self.topic[0], topic2=self.topic[1], created=self.created).save()
+        else:
+            post.topic = self.topic[0]
+            post.topic2 = self.topic[1]
+            post.save()
 
     def get_topic(self, topic_set, numOftopic):
         try:
@@ -65,15 +75,3 @@ class Post(models.Model):
             for i in range(numOftopic):
                 self.topic.append({'topic': cnt_list.index(topNval[i]), 'count': topNval[i]})
                 cnt_list[cnt_list.index(topNval[i])] = 0
-
-    def printpost(self):
-        user = self.user
-        if self.user is None: user = u''
-        text = self.title
-        if self.title is None: text = u''
-        top = [str(x['topic']) for x in self.topic]
-        print u'user: ' + user + u'\ntext: ' + text + u'\ntopic: ' + u', '.join(top).encode('utf-8').strip()
-
-    def json(self):
-        import json
-        return json.dumps({"user": self.user, "title": self.title, "topic": self.topic})

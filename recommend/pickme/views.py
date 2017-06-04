@@ -26,3 +26,9 @@ def cards(request):
     fb = Firebase(user_id)
     post = fb.get_card_with_id(user_id, post_id)
     return JsonResponse(post)
+
+
+def get_topic(request):
+    fb = Firebase(u'')
+    fb.get_topic()
+    return JsonResponse({})

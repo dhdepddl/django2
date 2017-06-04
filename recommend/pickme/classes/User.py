@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+from django.db import models
+
+
 def count_word_in_topic(doc, words):
     cnt = 0
     for noun in doc:
@@ -7,15 +12,25 @@ def count_word_in_topic(doc, words):
     return cnt
 
 
+class UserDB(models.Model):
+    user_id = models.CharField(max_length=30, primary_key=True)
+    topic_rating = models.CharField(max_length=200)
+
+
 class User:
     def __init__(self, id):
         self.id = id
         self.similar_users = None
         self.topic_rating = None
 
-    def json(self):
-        import json
-        return json.dumps({"id": self.id, "similar_users": self.similar_users, "topic_rating": self.topic_rating})
+    def saveDB(self):
+        try:
+            user = UserDB.objects.get(user_id=self.id)
+        except:
+            UserDB(user_id=self.id, topic_rating=str(self.topic_rating)).save()
+        else:
+            user.topic_rating = self.topic_rating
+            user.save()
 
     def get_topic_rating(self, test_data_path, topic_set):
         import lda_module as lda

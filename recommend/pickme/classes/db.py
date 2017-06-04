@@ -34,6 +34,21 @@ class Firebase:
             self.user_hearts = {}
             self.user_bookmarks = {}
 
+    def get_topic(self):
+        self.get_all_data()
+        self.posts += self.db.get('/dummy-cards/data')
+        from Topic import TopicManager
+        from Post import Post
+        tm = TopicManager()
+        for post in self.posts:
+            tm.add_post(Post(post['id'], post['user'], post['title'], post['item_1'], post['item_2'], post['created']))
+        tm.get_topic_from_posts(20, 20)
+        for topic in tm.topic_set:
+            print topic.topic_id
+            print str(topic.words)
+            topic.save()
+
+
     def is_deleted(self, post_info):
         if u'deleted' in post_info[1].keys():
             return True
@@ -112,7 +127,8 @@ class Firebase:
     def get_card(self, user_id, card_info):
         result = card_info
         post_id = card_info['id']
-        result.update(self.vote_info(user_id, post_id))
+        writer = result['user']
+        result.update(self.vote_info(user_id, post_id, writer))
         result.update(self.heart_info(user_id, post_id))
         result.update(self.comment_info(user_id, post_id))
         result.update(self.bookmark_info(user_id, post_id))
@@ -148,6 +164,8 @@ class Firebase:
 
         result.sort(key=operator.itemgetter('created'))
         result += self.recommend(user_id, num_of_recommend)
+
+        print self.hot_post
 
         return {'cards': result}
 
