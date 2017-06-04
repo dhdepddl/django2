@@ -96,6 +96,10 @@ class Firebase:
         else:
             return {"bookmarks": bookmarks, "bookmark_state": bookmark_state}
 
+    def get_user_rating(self, user_id):
+        result = []
+        return result
+
     def get_card(self, user_id, card_info):
         result = card_info
         post_id = card_info['id']
@@ -111,6 +115,7 @@ class Firebase:
         try:
             result = self.posts[post_id]
         except:
+            print 'no post id'
             return {}
         else:
             result.update(self.vote_info(user_id, post_id))
@@ -136,7 +141,12 @@ class Firebase:
 
         return {'cards': result}
 
-    def recommend(self, user_id, num_of_cards):
-
+    def recommend_post_id(self, user_id, num_of_cards):
         result = []
+        return result
+
+    def recommend(self, user_id, num_of_cards):
+        result = []
+        for post_id in self.recommend_post_id(user_id, num_of_cards):
+            result.append(self.get_card_with_id(self.user_id, post_id))
         return result

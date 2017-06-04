@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import pymysql
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,7 +27,7 @@ SECRET_KEY = '%9&n9#+s)9ifs%rhb_45-&*63nhj0$rp#dnogo&e+wa2@9vxk)'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [u'localhost', u'127.0.0.1', u'52.212.43.243', u'ec2-52-212-43-243.eu-west-1.compute.amazonaws.com']
+ALLOWED_HOSTS = [u'localhost', u'127.0.0.1', u'34.252.25.109', u'ec2-34-252-25-109.eu-west-1.compute.amazonaws.com']
 
 
 # Application definition
@@ -76,8 +78,12 @@ WSGI_APPLICATION = 'recommend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'pickmeDB',
+        'USER': 'root',
+        'PASSWORD': 'Rladuddms2',
+        'HOST': 'localhost',
+        'PORT': '3306'
     }
 }
 
