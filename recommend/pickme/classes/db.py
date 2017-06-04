@@ -105,6 +105,20 @@ class Firebase:
         result.update(self.bookmark_info(user_id, post_id))
         return result
 
+    def get_card_with_id(self, user_id, card_id):
+        self.get_all_data()
+        post_id = card_id
+        try:
+            result = self.posts[post_id]
+        except:
+            return {}
+        else:
+            result.update(self.vote_info(user_id, post_id))
+            result.update(self.heart_info(user_id, post_id))
+            result.update(self.comment_info(user_id, post_id))
+            result.update(self.bookmark_info(user_id, post_id))
+            return result
+
     def get_cards(self, user_id, num_of_recommend):
         result = []
 
