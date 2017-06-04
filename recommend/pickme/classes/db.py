@@ -24,9 +24,14 @@ class Firebase:
         self.hearts = total_data['card-hearts']
         self.comments = total_data['card-comments']
         self.bookmarks = total_data['card-bookmarks']
-        self.user_cards = total_data['user-cards'][self.user_id]
-        self.user_hearts = total_data['user-hearts'][self.user_id]
-        self.user_bookmarks = total_data['user-bookmarks'][self.user_id]
+        try:
+            self.user_cards = total_data['user-cards'][self.user_id]
+            self.user_hearts = total_data['user-hearts'][self.user_id]
+            self.user_bookmarks = total_data['user-bookmarks'][self.user_id]
+        except:
+            self.user_cards = {}
+            self.user_hearts = {}
+            self.user_bookmarks = {}
 
     def is_deleted(self, post_info):
         if u'deleted' in post_info[1].keys():
@@ -114,8 +119,6 @@ class Firebase:
 
         result.sort(key=operator.itemgetter('created'))
         result += self.recommend(user_id, num_of_recommend)
-        for i in range(len(result)):
-            print result[i]['created']
 
         return {'cards': result}
 
