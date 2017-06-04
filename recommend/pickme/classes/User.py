@@ -42,12 +42,3 @@ class User:
                 print 'Set of others is not a set of User class'
                 exit(-1)
         self.similar_users = most_similar_cosine(target_user_rating, user_rating, numOfuser)
-
-    def recommended(self, new_post_set, numOfpost, latest_val, topic_val, user_val):
-        total = latest_val + topic_val + user_val
-        latest_post_num = int(latest_val/total*numOfpost)
-        topic_post_num = int(topic_val/total*numOfpost)
-        user_post_num = int(user_val/total*numOfpost)
-
-
-

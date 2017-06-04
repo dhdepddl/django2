@@ -4,14 +4,18 @@ import operator
 
 
 class Firebase:
-    def __init__(self):
+    def __init__(self, user_id):
         auth = FirebaseAuthentication('kUFM5wAt2CkXtfKrglMjLPgNsuWsO33j1uKHMRyn', 'dhdepddl@gmail.com', True, True)
         self.db = firebase.FirebaseApplication('https://pickme-f283e.firebaseio.com', auth)
+        self.user_id = user_id
         self.posts = {}
         self.votes = {}
         self.hearts = {}
         self.comments = {}
         self.bookmarks = {}
+        self.user_cards = {}
+        self.user_hearts = {}
+        self.user_bookmarks = {}
 
     def get_all_data(self):
         total_data = self.db.get('/', None)
@@ -20,22 +24,9 @@ class Firebase:
         self.hearts = total_data['card-hearts']
         self.comments = total_data['card-comments']
         self.bookmarks = total_data['card-bookmarks']
-
-    def get_all_posts(self):
-        posts = self.db.get('/cards/data', None)
-        return posts
-
-    def get_all_vote(self):
-        self.votes = self.db.get('/item-selected', None)
-
-    def get_all_hearts(self):
-        self.hearts = self.db.get('/card-hearts', None)
-
-    def get_all_comments(self):
-        self.comments = self.db.get('/card-comments', None)
-
-    def get_all_bookmarks(self):
-        self.bookmarks = self.db.get('/card-bookmarks', None)
+        self.user_cards = total_data['user-cards'][self.user_id]
+        self.user_hearts = total_data['user-hearts'][self.user_id]
+        self.user_bookmarks = total_data['user-bookmarks'][self.user_id]
 
     def is_deleted(self, post_info):
         if u'deleted' in post_info[1].keys():
@@ -122,7 +113,13 @@ class Firebase:
             result.append(self.get_card(user_id, post_info))
 
         result.sort(key=operator.itemgetter('created'))
+        result += self.recommend(user_id, num_of_recommend)
         for i in range(len(result)):
             print result[i]['created']
 
         return {'cards': result}
+
+    def recommend(self, user_id, num_of_cards):
+
+        result = []
+        return result

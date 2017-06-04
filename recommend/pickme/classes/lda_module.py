@@ -113,12 +113,10 @@ def get_user_post_nick(path, nick=None):
 def make_noun_set(content):
     from konlpy.tag import Twitter
     parser = Twitter()
-    if os.name == 'mac' or 'posix':
-        from konlpy.tag import Mecab
-        parser = Mecab()
     docs = []
     nounset = []
     for doc in content:
+        words = parser.pos(doc['tweet'], norm=True, stem=True)
         nouns = parser.nouns(doc['tweet'])
         nounset += nouns
         docs.append(nouns)
