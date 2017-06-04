@@ -26,7 +26,8 @@ class TopicManager:
             raise TypeError('input parameter is not Post class')
 
     def get_topic_from_posts(self, num_of_words, num_of_topics, alpha=0.02, eta=0.005):
-        import lda_module as lda
+        import lda_module
+        import lda
         import numpy
         vocabs = []
         nouns = []
@@ -35,7 +36,7 @@ class TopicManager:
             vocabs += noun_set
             nouns.append(noun_set)
         vocabs = list(set(vocabs))
-        X = lda.matrix_lda(nouns, vocabs)
+        X = lda_module.matrix_lda(nouns, vocabs)
 
         model = lda.LDA(n_topics=num_of_topics, n_iter=2000, random_state=1, alpha=alpha, eta=eta)
         model.fit(X)

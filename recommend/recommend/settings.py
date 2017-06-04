@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'recommend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'pickmeDB',
+        'NAME': 'pickme',
         'USER': 'root',
         'PASSWORD': 'Rladuddms2',
         'HOST': 'localhost',

@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 from django.db import models
 
-
 def count_word_in_topic(doc, words):
     cnt = 0
     for noun in doc:
@@ -26,7 +25,6 @@ def rating_doc(doc, topic_set):
 
     return rst_topics
 
-
 class PostDB(models.Model):
     user_id = models.ForeignKey('auth.User')
     post_id = models.CharField(primary_key=True, max_length=30)
@@ -34,8 +32,7 @@ class PostDB(models.Model):
     topic_2 = models.SmallIntegerField(null=True)
     created = models.BigIntegerField(db_index=True)
 
-
-class Post(models.Model):
+class Post():
     def __init__(self, postId, user, title, item1, item2, created):
         from konlpy.tag import Twitter
         twitter = Twitter()

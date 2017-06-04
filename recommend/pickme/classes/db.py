@@ -36,11 +36,12 @@ class Firebase:
 
     def get_topic(self):
         self.get_all_data()
-        self.posts += self.db.get('/dummy-cards/data')
+        posts = self.posts.items() + self.db.get('/dummy-cards/data', None).items()
         from Topic import TopicManager
         from Post import Post
         tm = TopicManager()
-        for post in self.posts:
+        for post in posts:
+            post = post[1]
             tm.add_post(Post(post['id'], post['user'], post['title'], post['item_1'], post['item_2'], post['created']))
         tm.get_topic_from_posts(20, 20)
         for topic in tm.topic_set:
