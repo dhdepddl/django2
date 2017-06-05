@@ -275,5 +275,5 @@ class Firebase:
     def recommend(self, user_id, num_of_cards):
         result = []
         for post_id in self.recommend_post_id(user_id, num_of_cards):
-            result.append(self.get_card_with_id(self.user_id, post_id))
+            result.append(self.get_card_with_id(user_id, post_id))
         return result
