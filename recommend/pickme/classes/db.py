@@ -60,6 +60,7 @@ class Firebase:
             post.get_topic(tm.topic_set, 2)
             post.save_db()
 
+
     def is_deleted(self, post_info):
         if u'deleted' in post_info[1].keys():
             return True
@@ -189,11 +190,13 @@ class Firebase:
             post_info = post[1]
             result.append(self.get_card(user_id, post_info))
 
+        recommended = self.recommend(user_id, num_of_recommend)
+        result = [x for x in result if x not in recommended]
         result.sort(key=operator.itemgetter('created'))
-        result = self.recommend(user_id, num_of_recommend) + result
+        result = recommended + result
         return {'cards': result}
 
-    def recommend_post_id(self, user_id, num_of_cards):
+    def recommend_post_id(self, user_id, num_of_recommend):
         from Post import PostDB
         result = [x[0] for x in self.hot_post][:2]
         user_rating = self.get_user_rating(user_id)
