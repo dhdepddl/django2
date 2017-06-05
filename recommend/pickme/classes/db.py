@@ -28,6 +28,10 @@ class Firebase:
         self.comments = total_data['card-comments']
         self.bookmarks = total_data['card-bookmarks']
         try:
+            profile = total_data['user-profiles'][self.user_id]
+        except KeyError:
+            self.user_id = u''
+        try:
             self.user_cards = total_data['user-cards'][self.user_id]
         except KeyError:
             self.user_cards = {}
@@ -188,11 +192,12 @@ class Firebase:
                 continue
             post_info = post[1]
             result.append(self.get_card(user_id, post_info))
-
-        recommended = self.recommend(user_id, num_of_recommend)
-        result = [x for x in result if x not in recommended]
-        result.sort(key=operator.itemgetter('created'))
-        result = recommended + result
+            
+        if self.user_id != u'':
+            recommended = self.recommend(user_id, num_of_recommend)
+            result = [x for x in result if x not in recommended]
+            result.sort(key=operator.itemgetter('created'))
+            result = recommended + result
         return {'cards': result}
 
     def recommend_post_id(self, user_id, num_of_recommend):
