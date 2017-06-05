@@ -27,11 +27,15 @@ class Firebase:
         self.bookmarks = total_data['card-bookmarks']
         try:
             self.user_cards = total_data['user-cards'][self.user_id]
-            self.user_hearts = total_data['user-hearts'][self.user_id]
-            self.user_bookmarks = total_data['user-bookmarks'][self.user_id]
-        except:
+        except KeyError:
             self.user_cards = {}
+        try:
+            self.user_hearts = total_data['user-hearts'][self.user_id]
+        except KeyError:
             self.user_hearts = {}
+        try:
+            self.user_bookmarks = total_data['user-bookmarks'][self.user_id]
+        except KeyError:
             self.user_bookmarks = {}
 
     def get_topic(self):
@@ -85,7 +89,7 @@ class Firebase:
                     mn, idx = min((self.hot_post[i][1], i) for i in xrange(len(self.hot_post)))
                     if mn < total:
                         self.hot_post[idx] = (post_id, total)
-                return {"voted_1": voted_1, "voted_2": voted_2, "selected": selected}
+            return {"voted_1": voted_1, "voted_2": voted_2, "selected": selected}
 
     def heart_info(self, user_id, post_id):
         try:
@@ -126,7 +130,26 @@ class Firebase:
             return {"bookmarks": bookmarks, "bookmark_state": bookmark_state}
 
     def get_user_rating(self, user_id):
+        from Post import PostDB
         result = []
+        for i in range(20):
+            result.append(0)
+        hearts = list(self.user_hearts)
+        bookmarks = list(self.user_bookmarks)
+        cards = list(self.user_cards)
+        for id in hearts:
+            row = PostDB.objects.get(post_id=id)
+            result[row.topic] += 1
+            print row.topic
+            result[row.topic_2] += 1
+        for id in bookmarks:
+            row = PostDB.objects.get(post_id=id)
+            result[row.topic] += 2
+            result[row.topic_2] += 2
+        for id in cards:
+            row = PostDB.objects.get(post_id=id)
+            result[row.topic] += 3
+            result[row.topic_2] += 3
         return result
 
     def get_card(self, user_id, card_info):
@@ -140,7 +163,6 @@ class Firebase:
         return result
 
     def get_card_with_id(self, user_id, card_id):
-        self.get_all_data()
         post_id = card_id
         try:
             result = self.posts[post_id]
@@ -157,9 +179,6 @@ class Firebase:
 
     def get_cards(self, user_id, num_of_recommend):
         result = []
-
-        self.get_all_data()
-
         # For each card
         for post in self.posts.items():
             if self.is_deleted(post):
@@ -172,7 +191,8 @@ class Firebase:
         return {'cards': result}
 
     def recommend_post_id(self, user_id, num_of_cards):
-        result = [x[1] for x in self.hot_post][:2]
+        result = [x[0] for x in self.hot_post][:2]
+        user_rating = self.get_user_rating(user_id)
         return result
 
     def recommend(self, user_id, num_of_cards):
