@@ -257,7 +257,7 @@ class Firebase:
             recommended = self.recommend(user_id, num_of_recommend)
             result = [x for x in result if x not in recommended]
             result.sort(key=operator.itemgetter('created'))
-            result = recommended + result
+            result = result + recommended
         return {'cards': result}
 
     def recommend_post_id(self, user_id, num_of_recommend):
