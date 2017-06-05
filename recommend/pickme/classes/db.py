@@ -60,7 +60,6 @@ class Firebase:
             post.get_topic(tm.topic_set, 2)
             post.save_db()
 
-
     def is_deleted(self, post_info):
         if u'deleted' in post_info[1].keys():
             return True
