@@ -9,6 +9,7 @@ class Firebase:
         self.db = firebase.FirebaseApplication('https://pickme-f283e.firebaseio.com', auth)
         self.user_id = user_id
         self.posts = {}
+        self.dummy_posts = {}
         self.votes = {}
         self.hearts = {}
         self.comments = {}
@@ -21,6 +22,7 @@ class Firebase:
     def get_all_data(self):
         total_data = self.db.get('/', None)
         self.posts = total_data['cards']['data']
+        self.dummy_posts = total_data['dummy-cards']['data']
         self.votes = total_data['item-selected']
         self.hearts = total_data['card-hearts']
         self.comments = total_data['card-comments']
@@ -131,6 +133,7 @@ class Firebase:
 
     def get_user_rating(self, user_id):
         from Post import PostDB
+        from User import UserDB
         result = []
         for i in range(20):
             result.append(0)
@@ -150,7 +153,9 @@ class Firebase:
             row = PostDB.objects.get(post_id=id)
             result[row.topic] += 3
             result[row.topic_2] += 3
-        return result
+        index_result = [i[0] for i in sorted(enumerate(result), key=lambda x: x[1])][:5]
+        UserDB(user_id, str(index_result)).save()
+        return index_result
 
     def get_card(self, user_id, card_info):
         result = card_info
@@ -166,16 +171,14 @@ class Firebase:
         post_id = card_id
         try:
             result = self.posts[post_id]
-        except:
-            print 'no post id'
-            return {}
-        else:
-            writer = result['user']
-            result.update(self.vote_info(user_id, post_id, writer))
-            result.update(self.heart_info(user_id, post_id))
-            result.update(self.comment_info(user_id, post_id))
-            result.update(self.bookmark_info(user_id, post_id))
-            return result
+        except KeyError:
+            result = self.dummy_posts[post_id]
+        writer = result['user']
+        result.update(self.vote_info(user_id, post_id, writer))
+        result.update(self.heart_info(user_id, post_id))
+        result.update(self.comment_info(user_id, post_id))
+        result.update(self.bookmark_info(user_id, post_id))
+        return result
 
     def get_cards(self, user_id, num_of_recommend):
         result = []
@@ -191,8 +194,12 @@ class Firebase:
         return {'cards': result}
 
     def recommend_post_id(self, user_id, num_of_cards):
+        from Post import PostDB
         result = [x[0] for x in self.hot_post][:2]
         user_rating = self.get_user_rating(user_id)
+        for i in range(3):
+            post_id = PostDB.objects.filter(topic=user_rating[i])[0].post_id
+            result.append(post_id)
         return result
 
     def recommend(self, user_id, num_of_cards):
