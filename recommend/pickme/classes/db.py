@@ -137,9 +137,18 @@ class Firebase:
             return {"bookmarks": bookmarks, "bookmark_state": bookmark_state}
 
     def get_user_rating(self, user_id):
-        from Post import PostDB
+        from Post import PostDB, Post
         from User import UserDB
+        from Topic import Topic
+        import io
         result = []
+        topic_set = []
+        f = io.open('topic_words', 'r', encoding='utf8')
+        i=0
+        for line in f:
+            words = line.split(u', ')
+            topic_set.append(Topic(i, words))
+            i += 1
         for i in range(20):
             result.append(0)
         hearts = list(self.user_hearts)
@@ -149,23 +158,67 @@ class Firebase:
         self.user_acted = hearts + bookmarks + cards
         for post_id, user_ids in votes.items():
             if user_id in user_ids:
-                row = PostDB.objects.get(post_id=id)
+                try:
+                    row = PostDB.objects.get(post_id=post_id)
+                    result[row.topic] += 1
+                    result[row.topic] += 1
+                    self.user_acted.append(post_id)
+                except:
+                    post = self.posts[post_id]
+                    new_post = Post(post['id'], post['user'], post['title'], post['item_1'], post['item_2'], post['created'])
+                    new_post.get_topic(topic_set, 2)
+                    new_post.save_db()
+                    row = PostDB.objects.get(post_id=post_id)
+                    result[row.topic] += 1
+                    result[row.topic] += 1
+                    self.user_acted.append(post_id)
+        for post_id in hearts:
+            try:
+                row = PostDB.objects.get(post_id=post_id)
+                result[row.topic] += 1
+                result[row.topic_2] += 1
+            except:
+                post = self.posts[post_id]
+                new_post = Post(post['id'], post['user'], post['title'], post['item_1'], post['item_2'],
+                                post['created'])
+                new_post.get_topic(topic_set, 2)
+                new_post.save_db()
+                row = PostDB.objects.get(post_id=post_id)
                 result[row.topic] += 1
                 result[row.topic] += 1
                 self.user_acted.append(post_id)
-        for id in hearts:
-            row = PostDB.objects.get(post_id=id)
-            result[row.topic] += 1
-            result[row.topic_2] += 1
-        for id in bookmarks:
-            row = PostDB.objects.get(post_id=id)
-            result[row.topic] += 2
-            result[row.topic_2] += 2
-        for id in cards:
-            row = PostDB.objects.get(post_id=id)
-            result[row.topic] += 3
-            result[row.topic_2] += 3
-        index_result = [i[0] for i in sorted(enumerate(result), key=lambda x: x[1])][:5]
+        for post_id in bookmarks:
+            try:
+                row = PostDB.objects.get(post_id=post_id)
+                result[row.topic] += 2
+                result[row.topic_2] += 2
+            except:
+                post = self.posts[post_id]
+                new_post = Post(post['id'], post['user'], post['title'], post['item_1'], post['item_2'],
+                                post['created'])
+                new_post.get_topic(topic_set, 2)
+                new_post.save_db()
+                row = PostDB.objects.get(post_id=post_id)
+                result[row.topic] += 2
+                result[row.topic] += 2
+                self.user_acted.append(post_id)
+        for post_id in cards:
+            try:
+                row = PostDB.objects.get(post_id=post_id)
+                result[row.topic] += 3
+                result[row.topic_2] += 3
+            except:
+                post = self.posts[post_id]
+                new_post = Post(post['id'], post['user'], post['title'], post['item_1'], post['item_2'],
+                                post['created'])
+                new_post.get_topic(topic_set, 2)
+                new_post.save_db()
+                row = PostDB.objects.get(post_id=post_id)
+                result[row.topic] += 3
+                result[row.topic] += 3
+                self.user_acted.append(post_id)
+        index_result = [i[0] for i in sorted(enumerate(result), key=lambda x: x[1])][-5:]
+        index_result.reverse()
         UserDB(user_id, str(index_result)).save()
         return index_result
 
@@ -200,8 +253,7 @@ class Firebase:
                 continue
             post_info = post[1]
             result.append(self.get_card(user_id, post_info))
-
-        if self.user_id != u'':
+        if user_id != u'':
             recommended = self.recommend(user_id, num_of_recommend)
             result = [x for x in result if x not in recommended]
             result.sort(key=operator.itemgetter('created'))
@@ -214,7 +266,7 @@ class Firebase:
         user_rating = self.get_user_rating(user_id)
         for i in range(3):
             post_id_set = PostDB.objects.filter(topic=user_rating[i])
-            ids = [x.post_id for x in post_id_set if x.post_id not in self.user_acted]
+            ids = [x.post_id for x in post_id_set if x.post_id not in self.user_acted and x.post_id not in self.hot_post]
             if len(ids) == 0:
                 continue
             result.append(ids[0])
