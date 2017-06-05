@@ -18,6 +18,7 @@ class Firebase:
         self.user_hearts = {}
         self.user_bookmarks = {}
         self.hot_post = []
+        self.user_acted = []
 
     def get_all_data(self):
         total_data = self.db.get('/', None)
@@ -144,10 +145,17 @@ class Firebase:
         hearts = list(self.user_hearts)
         bookmarks = list(self.user_bookmarks)
         cards = list(self.user_cards)
+        votes = self.votes
+        self.user_acted = hearts + bookmarks + cards
+        for post_id, user_ids in votes.items():
+            if user_id in user_ids:
+                row = PostDB.objects.get(post_id=id)
+                result[row.topic] += 1
+                result[row.topic] += 1
+                self.user_acted.append(post_id)
         for id in hearts:
             row = PostDB.objects.get(post_id=id)
             result[row.topic] += 1
-            print row.topic
             result[row.topic_2] += 1
         for id in bookmarks:
             row = PostDB.objects.get(post_id=id)
@@ -192,7 +200,7 @@ class Firebase:
                 continue
             post_info = post[1]
             result.append(self.get_card(user_id, post_info))
-            
+
         if self.user_id != u'':
             recommended = self.recommend(user_id, num_of_recommend)
             result = [x for x in result if x not in recommended]
@@ -205,8 +213,11 @@ class Firebase:
         result = [x[0] for x in self.hot_post][:2]
         user_rating = self.get_user_rating(user_id)
         for i in range(3):
-            post_id = PostDB.objects.filter(topic=user_rating[i])[0].post_id
-            result.append(post_id)
+            post_id_set = PostDB.objects.filter(topic=user_rating[i])
+            ids = [x.post_id for x in post_id_set if x.post_id not in self.user_acted]
+            if len(ids) == 0:
+                continue
+            result.append(ids[0])
         return result
 
     def recommend(self, user_id, num_of_cards):
